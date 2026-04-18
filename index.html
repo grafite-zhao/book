@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>灵犀之书 - 定位你的灵魂读物</title>
+    <style>
+        :root {
+            --primary-blue: #2A5C82;
+            --light-blue: #E8F0F7;
+            --white: #FFFFFF;
+            --text-dark: #334E68;
+            --text-light: #627D98;
+            --border: #D9E2EC;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--light-blue);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: var(--white);
+            max-width: 600px;
+            width: 90%;
+            margin: 40px auto;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(42, 92, 130, 0.1);
+            position: relative;
+        }
+        h1, h2 {
+            color: var(--primary-blue);
+            text-align: center;
+            font-weight: 300;
+        }
+        .intro-text {
+            text-align: center;
+            line-height: 1.8;
+            color: var(--text-light);
+            margin-bottom: 30px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 15px 0;
+            background-color: var(--white);
+            color: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+        .btn:hover {
+            background-color: var(--primary-blue);
+            color: var(--white);
+        }
+        .start-btn {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            text-align: center;
+            font-size: 18px;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .start-btn:hover {
+            background-color: #1c3e5a;
+        }
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: underline;
+            margin-top: 20px;
+            display: inline-block;
+        }
+        .progress {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        .result-img {
+            width: 100%;
+            max-height: 350px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .result-content p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 15px;
+            color: var(--text-dark);
+        }
+        .quote {
+            padding: 15px;
+            border-left: 4px solid var(--primary-blue);
+            background-color: var(--light-blue);
+            font-style: italic;
+            color: var(--primary-blue);
+            margin: 20px 0;
+        }
+        .scores {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            background: var(--light-blue);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: bold;
+            color: var(--primary-blue);
+            font-size: 14px;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+
+    <div id="welcome-page">
+        <h1>寻书指南</h1>
+        <p class="intro-text">这是一个由42个生活切片组成的测试。<br>没有对错，只是一些普通的日常习惯与反应。<br>放轻松，凭第一直觉选就好。<br>我们将在这个世界上浩瀚的书海里，为你寻得一本目前最契合你的书。</p>
+        <button class="start-btn" onclick="startTest()">开始翻阅</button>
+    </div>
+
+
+    <div id="question-page" class="hidden">
+        <div class="progress" id="progress-text">1 / 42</div>
+        <h2 id="question-title">题目加载中...</h2>
+        <div id="options-container">
+
+        </div>
+        <button class="nav-btn" id="prev-btn" onclick="prevQuestion()" class="hidden">← 选错了，退回去</button>
+    </div>
+
+
+    <div id="loading-page" class="hidden">
+        <h1>寻觅中...</h1>
+        <p class="intro-text">正在捕捉你不经意间流露的思绪，稍等一下...</p>
+    </div>
+
+
+    <div id="result-page" class="hidden">
+        <h2>遇见属于你的那本书：</h2>
+        <h1 id="res-title" style="margin-bottom:5px;">《书名》</h1>
+        <div style="text-align:center; color: var(--text-light); margin-bottom:15px;" id="res-author">作者：某某</div>
+
+        <img id="res-img" src="" alt="书籍图像" class="result-img">
+
+        <!-- 极简化的倾向标签展示 -->
+        <div class="scores" id="res-scores">
+
+        </div>
+
+        <div class="result-content" id="res-content">
+
+        </div>
+
+        <button class="start-btn" onclick="location.reload()">再试一次</button>
+    </div>
+</div>
+
+<script>
+const questions = [
+    { q: "早上一般喜欢怎么吃？", o: ["不吃", "只喝点饮品对付一下", "找个热闹小摊吃口热乎的", "吃点好看又丰盛的", "无所谓，填饱肚子就行"], v: [[1,1,0,1], [0,1,0,0], [-1,-1,1,0], [-1,0,-1,-1], [0,-1,0,1]] },
+    { q: "休息日没有工作和安排，你会怎么过？", o: ["在床上瘫一整天刷手机", "趁机把家里彻底打扫一遍", "约熟悉的朋友随便聚聚", "一个人出门瞎逛或者看电影", "头脑一热直接买票去个新地方"], v: [[1,1,0,1], [0,-1,-1,-1], [-1,-1,1,0], [1,1,-1,0], [0,1,1,1]] },
+    { q: "买衣服的时候，你最看重哪一点？", o: ["摸着舒服才是第一位的", "样式特别点，不想烂大街", "主要是耐穿、好洗", "看对眼了就买，说不清原因", "得符合我一直以来的风格"], v: [[0,-1,1,1], [0,1,0,0], [0,-1,-1,-1], [0,0,1,1], [1,0,-1,-1]] },
+    { q: "窗外突然下起了暴雨，你看着窗外会想？", o: ["回头鞋子要湿了，真够烦的", "听着雨声感觉心里挺安宁的", "没想啥，就是单纯发会儿呆", "想起了很久以前某个下雨的日子"], v: [[0,-1,-1,0], [0,1,1,0], [1,1,0,1], [1,1,1,0]] },
+    { q: "走在路上，手机吧唧一下摔碎了屏，你第一反应？", o: ["老天，又要花钱修了", "气死我了，今天可真倒霉", "能凑合用就接着用呗", "正好，买个新的去"], v: [[0,-1,-1,-1], [0,0,1,0], [0,-1,0,1], [-1,0,-1,0]] },
+    { q: "跟挺熟的朋友因为一点小事拌嘴了，你会？", o: ["跟他争到底，非得说明白", "打个岔混过去，不想多吵", "不说话了，自己在一边生闷气", "过一阵子发一堆长信息解释"], v: [[-1,0,-1,-1], [0,0,0,1], [1,0,1,0], [1,1,1,-1]] },
+    { q: "去超市买点日常用的东西，你习惯怎么买？", o: ["想好要买啥，拿了就去结账", "大概有数，但也会到处看看", "瞎逛，看到啥喜欢的就拿点", "基本只拿自己经常用的那几个牌子"], v: [[0,-1,-1,-1], [0,0,0,0], [0,0,1,1], [0,-1,0,-1]] },
+    { q: "朋友忽然给你发条消息说心情好差，你怎么回？", o: ["“咋回事啊？”", "直接一个语音电话拨过去", "发几个摸摸头的可爱表情包", "看着屏幕愣一会，想想要怎么发才好"], v: [[0,0,0,0], [-1,0,1,0], [0,0,1,0], [1,1,0,-1]] },
+    { q: "回家一开门，满地都是漏的水，你先干嘛？", o: ["赶紧去找拖把抹布", "拿起电话摇人来修", "盯着一地的水，感觉头都大了", "先跑去看看能不能把水阀给关了", "掏出手机拍张照发个朋友圈吐槽一下"], v: [[0,-1,-1,0], [0,0,-1,-1], [1,1,1,0], [0,-1,-1,0], [-1,0,1,1]] },
+    { q: "坐好几个小时的高铁，你一般都在干啥？", o: ["闭上眼睛睡觉", "戴着耳机发呆看外面", "跟旁边的人搭句话聊聊天", "漫无目的地滑手机"], v: [[0,0,0,1], [1,1,1,0], [-1,-1,0,1], [0,-1,0,1]] },
+    { q: "大半夜睡不着躺在床上，脑子里总想啥？", o: ["瞎琢磨白天是不是说错什么话了", "幻想着自己突然中了五百万发大财", "盘算明天几点起、要干嘛", "随便听听窗外的风声车声"], v: [[1,1,1,0], [1,1,0,1], [0,-1,-1,-1], [1,0,1,0]] },
+    { q: "刚换了个新班级或是新公司，你头几天什么状态？", o: ["悄悄坐在自己的位置上观察大家", "看着谁顺眼就过去闲聊几句", "别人跟我说话我就说，不问我就不开口", "出去上个厕所透透气，觉得人多有点累"], v: [[1,1,0,0], [-1,-1,0,0], [1,-1,-1,-1], [1,0,1,1]] },
+    { q: "好朋友过生日，打算送点啥？", o: ["挑个实实在在好用的东西", "买个挺漂亮的摆件或者盲盒", "自己动手倒腾点啥，写张卡片", "拉出去大吃一顿我请客"], v: [[0,-1,-1,0], [0,1,0,0], [1,1,1,-1], [-1,0,1,0]] },
+    { q: "下馆子点的小炒肉，服务员不小心上成回锅肉了，你咋办？", o: ["叫服务员过来端走换掉", "看着这盘也行，凑合吃吧", "跟一起吃饭的人抱怨几句，问换不换"], v: [[-1,0,-1,0], [0,0,1,1], [-1,0,1,0]] },
+    { q: "路上碰到个以前认识但不熟的人，第一反应？", o: ["装作看手机低头走过去", "迎上去大方挥挥手", "礼貌地笑一个点下头", "心里祈祷他别先跟我打招呼"], v: [[1,0,1,1], [-1,0,0,1], [0,-1,0,-1], [1,0,1,0]] },
+    { q: "今天就你一个人在家吃晚饭，你怎么解决？", o: ["煮碗面条或者随便对付一口", "定点爱吃的外卖", "边追剧边往嘴里零食，当饭吃了", "认认真真炒几个菜犒劳自己"], v: [[0,-1,0,1], [0,0,1,0], [1,1,1,1], [0,-1,-1,-1]] },
+    { q: "你微信打字的习惯，更偏向哪一种？", o: ["飞快敲字，有时候错别字也懒得改", "能发语音就发语音", "总得回头扫一眼有没有说得不对的地方", "喜欢用一堆表情包对付"], v: [[-1,0,0,1], [-1,-1,0,1], [0,-1,-1,-1], [0,1,1,1]] },
+    { q: "碰到特别难过的事，怎么排解？", o: ["一个人躲屋里结结实实哭一场", "找最铁的哥们/闺蜜去喝一杯", "蒙头去外面压马路，走到累死", "感觉麻麻的，不知道该干嘛"], v: [[1,0,1,0], [-1,0,1,0], [1,1,1,1], [1,1,0,0]] },
+    { q: "打扫自己屋子的时候，你什么状态？", o: ["想起来扫哪就扫哪", "扫地擦桌子，一套顺下来", "扫到一个旧本子，捧在那看了半个小时", "把用不到的东西全扔掉"], v: [[0,0,0,1], [0,-1,-1,-1], [1,1,1,1], [0,-1,-1,-1]] },
+    { q: "新买的小吃太难吃了，你咋弄？", o: ["直接扔垃圾桶", "叹口气，硬塞着吃完算了", "尝一口就丢桌子上不管了", "笑嘻嘻地拿去骗朋友尝一口"], v: [[0,-1,-1,1], [0,-1,-1,-1], [0,0,0,1], [-1,1,1,1]] },
+    { q: "你写日记吗？", o: ["不写", "遇到特别气或者特别开心的事，就在手机里记一笔", "总是一时兴起想写，坚持不下来", "用来记账或者记今天见谁了"], v: [[0,-1,-1,0], [1,1,1,1], [0,1,1,1], [0,-1,-1,-1]] },
+    { q: "有个免费体验课，只能选一个，你去哪个？", o: ["去捏泥巴或者做木工", "学学怎么煮咖啡调饮料", "去画画或者拍照片", "懒得动，不去了"], v: [[1,1,0,1], [-1,0,1,0], [1,1,1,0], [1,0,0,1]] },
+    { q: "大群里在热火朝天地聊一件你很懂的事，你会？", o: ["潜水默默看着", "直接噼里啪啦也插嘴去聊", "找个人单独在小窗里吐槽", "看完觉得他们瞎扯，但也懒得去纠正"], v: [[1,0,0,0], [-1,-1,-1,-1], [1,0,1,0], [1,1,-1,0]] },
+    { q: "大晚上一个人走在黑漆漆的小路上，感觉咋样？", o: ["赶紧溜，快点走长直的就行", "一边走一边自己脑补些吓人的画面", "觉得周围悄没声息的，还挺放松", "耳机一戴谁也不爱，装作不害怕"], v: [[0,-1,-1,0], [1,1,1,1], [1,1,0,0], [1,0,1,0]] },
+    { q: "无意间抬头看到天上的云长得特别怪，你咋办？", o: ["没啥反应", "顺手拍个照片发出去", "在心里感叹一下：真有意思", "会因为看云停下来发会儿呆"], v: [[0,-1,-1,0], [-1,0,1,0], [0,1,1,0], [1,0,0,1]] },
+    { q: "路边一只流浪小猫冲你叫唤，你会？", o: ["看了看，走开了", "蹲下来想逗逗，想摸又不敢", "学它“喵”两声", "去便利店给它买根吃的去"], v: [[0,-1,-1,0], [1,0,1,0], [0,1,1,1], [-1,0,1,0]] },
+    { q: "你每天定闹钟是个什么风格？", o: ["就定一个，响了马上起", "隔五分钟定一个，定一排", "响了也得赖床半天", "睡前老是忍不住看几遍定上了没"], v: [[0,-1,-1,-1], [0,0,0,1], [0,0,1,0], [1,-1,0,-1]] },
+    { q: "排队买东西，有人插队在你前头，你咋弄？", o: ["拍他一下，让他去后面", "在心里翻个大白眼，盯着他的后背", "自己劝自己算了吧，几秒钟的事", "转头和后面的人一块儿嘀咕他"], v: [[0,-1,0,0], [1,0,1,0], [1,0,0,1], [0,0,1,1]] },
+    { q: "电影看一半，你发现自己猜到结尾了，你会？", o: ["马上跟旁边朋友嘚瑟一下", "心里有点小得意，接着看", "叹口气，觉得没意思了掏手机", "继续看，总觉得导演肯定还留了一手"], v: [[-1,-1,0,0], [1,-1,-1,0], [0,1,0,1], [1,1,-1,0]] },
+    { q: "偶尔想到好几年前的自己，心里啥感觉？", o: ["觉得那时候像个二傻子", "有点怀念那时候的糊里糊涂", "感觉像是在看电影里别人的八卦", "只觉得这些年跑得太快了，有点遗憾"], v: [[0,0,-1,0], [0,1,1,0], [1,1,0,0], [1,1,1,0]] },
+    { q: "对朋友借钱这事儿，你怎么看？", o: ["不借别人，也不去借别人的", "小钱就算了，权当送了", "自己不好意思往回要，只能干着急", "真正好的朋友，能帮肯定帮到底"], v: [[0,-1,-1,-1], [0,0,1,1], [1,1,1,0], [-1,0,1,0]] },
+    { q: "马上出门了发现钥匙找不见了，你咋找？", o: ["直接把沙发抽屉翻得乱七八糟", "站那儿不动，开始顺着回想一下", "算了，用备用钥匙或者干脆不锁了", "问家里人是不是看见了"], v: [[0,0,0,1], [1,-1,-1,-1], [0,0,1,1], [-1,0,1,1]] },
+    { q: "日常怕忘事的时候，习惯怎么记？", o: ["随手抄张纸条上后来就不知道丢哪了", "老老实实写手机的备忘录里", "看到啥直接截图保存起来", "靠脑子硬记"], v: [[0,0,0,1], [0,-1,-1,-1], [0,0,0,1], [1,1,-1,1]] },
+    { q: "网购买个小东西，买不买取决于啥？", o: ["看着顺眼差不多就买了", "翻翻底下的差评怎么说", "去另外一个软件搜搜看有多贵", "扔在购物车里，过几天想起来再说"], v: [[0,0,1,1], [0,-1,-1,-1], [0,-1,-1,-1], [1,0,0,0]] },
+    { q: "买回来的盆栽快死了，叶子全黄了，你会？", o: ["赶紧上网查怎么救一下", "多浇几次水试试", "看着闹心，感觉自己干啥都不行", "扔了呗，再换一盆"], v: [[0,-1,-1,-1], [0,0,0,1], [1,1,1,0], [0,-1,-1,0]] },
+    { q: "要在人多的地方说几句，你提前准备啥样？", o: ["一字不落写好背下来", "打个大概的腹稿就行，剩下的再说", "想到哪儿说哪儿，老是扯远", "有点人来疯，大家越看我，说得越起劲"], v: [[0,-1,-1,-1], [0,0,0,0], [0,1,1,1], [-1,-1,0,1]] },
+    { q: "地铁边上的大哥开着大音量刷土味视频，你咋办？", o: ["直接跟大哥喊一句让他关小点", "自己耳机一戴，不听了", "瞪他两眼，看有没有空座位去换一个", "心里很讨厌，但是就这么忍着听了一路"], v: [[-1,0,-1,-1], [1,0,0,0], [0,0,-1,0], [1,0,1,1]] },
+    { q: "事情明天就截止了还没做完，这种时候你？", o: ["啥也不管了，熬个大夜死磕完", "越着急越想看会儿手机磨蹭一下", "破罐子破摔，大不了明天认个错", "早就安排好了，今早其实做了一点"], v: [[0,0,0,1], [1,1,1,1], [0,1,1,1], [0,-1,-1,-1]] },
+    { q: "刷朋友圈看到别人突然升职或者买房了，你心里？", o: ["“哎哟，混得不错啊”，点个赞", "扫一眼就滑过去了", "“有什么好发的，也是够了”", "一下子莫名其妙觉得自己真惨"], v: [[-1,-1,-1,0], [0,-1,0,0], [1,0,-1,0], [1,1,1,0]] },
+    { q: "大家凑一块张罗着要合照留念，你通常在大家哪个位置？", o: ["举着手机在最前面拍大家的那位", "在中间面带微笑老实行注目礼的那个", "站在最后一排往后缩缩脸的那一个", "指挥大家往哪边站光线好一点的那个"], v: [[-1,-1,0,-1], [0,-1,1,0], [1,1,1,0], [0,-1,-1,-1]] },
+    { q: "要你去个完全没有网的林子里住上七天，你觉得？", o: ["哇这太爽了，简直神仙生活", "别开玩笑了，半天我就疯了", "要是能自己带点爱干的事去打发还行", "得看是谁跟我一块儿去"], v: [[1,1,0,0], [-1,-1,-1,1], [0,1,0,-1], [-1,0,1,0]] },
+    { q: "不知不觉点完这些题了，你现在在想啥？", o: ["呼，可算是点完了赶紧看看结果去", "有些题感觉怎么那么扎我的心呢", "随便瞎点的，有点无聊", "能不能给我推本有点意思的书啊"], v: [[0,0,-1,0], [1,1,1,0], [-1,-1,0,1], [0,1,1,-1]] }
+];
+
+const books = [
+    {
+        title: "斜阳",
+        author: "太宰治",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Dazai_Osamu_1.jpg/800px-Dazai_Osamu_1.jpg",
+        bio: "太宰治（1909-1948），日本无赖派代表作家。他一生都在各种情感与生存的崩塌边缘拉扯，写完这本书不久便投水离去。",
+        intro: "讲了一场旧日贵族家庭在时代洪流中的绝美坠落故事。书里的人们家道中落，生活一地鸡毛，可是那个年轻的女孩偏偏不妥协，硬是要以一种极其骄傲又有些决绝的姿态，寻找着活下去的出口。",
+        impact: "“我是贵族。我是平民。……我要像太阳一样，活下去。”",
+        reason: "你的心里藏着一些不想向现实低头的骄傲，不喜欢勉强自己去讨好所有人。这本书懂你那份在疲惫生活里依然向往极致的情绪，它会陪伴你在黑夜里重拾自己的力量。",
+        matchCondition: (e,n,f,j) => e > 4 && f > 2 && n > 2
+    },
+    {
+        title: "十角馆事件",
+        author: "绫辻行人",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Yukito_Ayatsuji_2019.jpg/640px-Yukito_Ayatsuji_2019.jpg",
+        bio: "绫辻行人（1960-），日本推理文学名家，最擅长在看似不可思议的迷局里放下一根冰冷却极度合理的线。",
+        intro: "几个性格各异的大学生来到一座古怪的孤岛建筑里度假散心。正当大家觉得无聊时，岛上发生了一连串根本无法用普通逻辑解释的事件。没有煽情的眼泪，所有的秘密全藏在那丝丝入扣的文字游戏里。",
+        impact: "被公认为不可逾越的智力大挑战，书末最后那淡淡的一句反转，看懵了无数人。",
+        reason: "你平时看事情常常有一眼看穿本质的通透感，不喜欢那些被过分包装的鸡汤和虚假的感动。这本书里干干净净的纯粹推理，一定会让你在读完的那一刹那大呼痛快。",
+        matchCondition: (e,n,f,j) => f < -3 && n > 0 && j < -1
+    },
+    {
+        title: "我是猫",
+        author: "夏目漱石",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Natsume_Soseki_photo.jpg/800px-Natsume_Soseki_photo.jpg",
+        bio: "夏目漱石（1867-1916），经常出现在日元钞票上的大作家，笔调诙谐却不惹人嫌。",
+        intro: "故事完全是站在一只流浪小猫的视角展开的。这只没有名字的小野猫每天蹲在屋檐上、院墙边，看着底下那群酸得掉牙的知识分子们为了点小事情吵吵闹闹，把成年人的笨拙和好面子全掀了出来。",
+        impact: "“咱们是猫。名字嘛……还没有。”极其生动好笑，读来一点都不嫌累。",
+        reason: "你向往着轻松一点的随性状态，喜欢和外面的热闹事保持一丁点安全距离，当个不惹火上身的旁观者。去读一读这只毒舌小猫的日记吧，它就和你一样，看着世人的穷忙偷偷乐呵。",
+        matchCondition: (e,n,f,j) => e > 2 && j > 2 && f <= 0
+    },
+    {
+        title: "百年孤独",
+        author: "加西亚·马尔克斯",
+        img: "https://upload.wikimedia.org/wikipedia/en/thumb/a/a0/Cien_a%C3%B1os_de_soledad_%28book_cover%2C_1967%29.jpg/220px-Cien_a%C3%B1os_de_soledad_%28book_cover%2C_1967%29.jpg",
+        bio: "加西亚·马尔克斯，凭借惊人的讲故事能力拿下拉美那尊文学界最高的奖杯。",
+        intro: "讲了一个深山里与世隔绝的小镇，以及镇上一个古怪的大家族，在一百年当中轮回兴衰的史诗。大雨下个不停，死去的鬼魂在屋子里散步，有人乘着床单飞上了天，这是一个彻底魔幻又极其孤独的一生梦境。",
+        impact: "“多年以后，面对行刑队，奥雷里亚诺·布恩迪亚上校将会回想起父亲带他去见识冰块的那个遥远的下午。”",
+        reason: "碎片的短视频和干瘪的文章喂不饱你此刻的需求，你需要一个极度深邃、宏大而且充满魔力的大世界，去安放你天马行空的灵光一闪。这本书庞大而迷人的气质，非你莫属。",
+        matchCondition: (e,n,f,j) => n > 5
+    },
+    {
+        title: "看得见的城市",
+        author: "伊塔洛·卡尔维诺",
+        img: "https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/Invisible_cities.jpg/220px-Invisible_cities.jpg",
+        bio: "卡尔维诺（1923-1985），如同一个手捧水晶球的匠人，写出了无数天衣无缝的奇想篇章。",
+        intro: "这本书里没有跌宕起伏的情恩交缠情仇。它仅仅是旅行家马可·波罗坐在那里，向年迈的可汗讲述他在天涯海角见过的那些匪夷所思的城市。城市由镜子做成，城市从悬崖上垂落……全是迷宫般的温柔幻想。",
+        impact: "就像做了一场不连贯却美得让人舍不得醒来的奇梦。",
+        reason: "你的小脑袋瓜里总是藏着各种天旋地转的奇妙想法。你不需要看别人打怪升级或是柴米油盐，你需要这座只存在于意象里的云端城市，供你在疲惫时跑进去毫无目的地散步。",
+        matchCondition: (e,n,f,j) => n > 2 && f > 0 && e > 1
+    },
+    {
+        title: "变形记",
+        author: "弗兰兹·卡夫卡",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Metamorphosis.jpg/800px-Metamorphosis.jpg",
+        bio: "卡夫卡（1883-1924），生前是个不起眼的小职员，却用自己敏锐的眼光凿穿了生活的面具。",
+        intro: "某个非常普通的早晨，一个每天起早贪黑出差养家糊口的业务员，在自己的床上醒来，赫然发现自己不知道为什么变成了一只巨大无比、让家里人极其嫌恶的甲虫。随后的日子里，最折磨他的不是怎么变回来，而是怎么在这个家待下去。",
+        impact: "荒诞得让人笑不出声。把那些温情脉脉下最残忍的现实，扒开了给你看。",
+        reason: "在现实世界里打滚的时候，你是否也偶尔感觉喘不过气来，或者有种不知道每天在瞎忙些什么的不适感？看看这本带点黑色幽默的小说，你会在这份有些窒息的绝望中，找到某种解脱的清醒。",
+        matchCondition: (e,n,f,j) => j > 1 && e > 3
+    },
+    {
+        title: "罪与罚",
+        author: "陀思妥耶夫斯基",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Crime_and_Punishment_1866_title_page.jpg/800px-Crime_and_Punishment_1866_title_page.jpg",
+        bio: "陀思妥耶夫斯基，俄国文学巨头。他笔下的人物大多处在要发疯或者濒临崩溃的边缘。",
+        intro: "一个退了学的穷困小伙子，因为一时的激愤和对所谓“大人物”盲目的向往，拎起斧头干下了一件大错事。在那之后，并没有警察来飞速将他逮捕，真正折磨他的，是他那不停拉扯、翻滚煎熬的心灵深渊。",
+        impact: "你几乎能在这本书里听到那个年轻人慌乱得犹如打鼓般的心跳声。",
+        reason: "你看似平静，但遇到事儿很容易在心底自己跟自己打架、纠结。比起甜甜烂烂的面包，这把直通人底线最深处的手术刀，反而能让一直内耗着的心灵体会到一种淋漓尽致的畅快。",
+        matchCondition: (e,n,f,j) => f > 3 && n > 3 && j < 0
+    },
+    {
+        title: "斯通纳",
+        author: "约翰·威廉斯",
+        img: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d4/Stoner_%28novel%29_cover.jpg/220px-Stoner_%28novel%29_cover.jpg",
+        bio: "威廉斯是个安静的写作者。这本安静的书在写完很久很久以后，才奇迹般地火遍了全球的书店。",
+        intro: "讲了一个出身普通农庄的小伙子，去念了书，结婚成家，找了一份老师的活计。他这辈子既没发大财，也没干惊天动地的大事，家里也不怎么顺当，一切全都是平淡的坎坷。但他从没放弃过心底想护着的那点儿东西。",
+        impact: "哪怕在外人眼里过得不怎么样，也要认认真真活在这个平庸的世界里。",
+        reason: "你不喜欢到处咋呼，做事情踏实且要强。这本书就像冬天晚上暖手的一杯温开水，它不会教你怎么升职加薪，而是悄悄过来拍拍你的肩膀，接住了你这实实在在的小日子。",
+        matchCondition: (e,n,f,j) => n < 0 && e >= 0 && j < 2
+    },
+    {
+        title: "三体",
+        author: "刘慈欣",
+        img: "https://upload.wikimedia.org/wikipedia/zh/thumb/4/41/Threebd.jpg/220px-Threebd.jpg",
+        bio: "大刘，一个曾经坐在电厂前看着大山的人，硬生生把中国科幻的舞台拉高到了星辰大海的级别。",
+        intro: "有人实在是对生活彻底失去了指望，对着漫天星空发出了信号。结果不小心被另外一群苦苦挣扎的外星人给听见了。一场漫无边际的、算计了四百多年的星际暗战，就这么拉开了序幕。",
+        impact: "看完以后，再看看地球上人跟人那点吵架的破事，觉得也不过就是一粒微尘。",
+        reason: "小痛小痒的言情文章根本提不起你的兴致。你遇到问题更爱抓主干条理，心思明亮。跳出当下的那些人情世故，跑去这个超大的棋盘上享受一把思维飞速冲刷的过瘾时刻吧。",
+        matchCondition: (e,n,f,j) => f < -3 && n > 2
+    },
+    {
+        title: "不能承受的生命之轻",
+        author: "米兰·昆德拉",
+        img: "https://upload.wikimedia.org/wikipedia/en/thumb/5/52/The_Unbearable_Lightness_of_Being_%28book_cover%29.jpg/220px-The_Unbearable_Lightness_of_Being_%28book_cover%29.jpg",
+        bio: "米兰·昆德拉（1929-2023），全世界那么多不甘平庸却又不得不平庸的人，都是他的忠实读者。",
+        intro: "在一个局势说变就变的国家里，有一场掺杂着真爱与背叛的纠葛恋爱。男主想要轻飘飘地游戏人间，不沾染一点负担；女主却极其看重感情，背负着满满的重压。它没教人怎么谈恋爱，只是把选择抛给了你。",
+        impact: "在随便什么事情都要跟上一句大道理的今天，这本书只陪你聊风月与哲学，嘲笑可怜的人生。",
+        reason: "从你的那些选择里能看出来，你在洒脱随性和死磕认真的两条线里经常来回晃悠。那就别管那么多了，看看这本书是怎样在轻松写意里撕拽这有些滑稽的人生，你会立刻明白该怎么跟自己和解。",
+        matchCondition: (e,n,f,j) => j >= 0 && j <= 3 && f > 0
+    },
+    {
+        title: "倾城之恋",
+        author: "张爱玲",
+        img: "https://upload.wikimedia.org/wikipedia/en/thumb/4/4b/Love_in_a_Fallen_City.jpg/220px-Love_in_a_Fallen_City.jpg",
+        bio: "一个心思比针尖还要细密的传奇女子，专写那些华美却又带点世俗气味的情缘故事。",
+        intro: "男主是个游戏人间的海归少爷，女主是离了婚要在娘家看尽冷眼的小姐。两个互相有些好感，但又把一分一毫都算计得清清楚楚的男女，在一起玩了一场拉锯战。偏偏打着仗了，整个城市的翻覆，反而冷不丁地成全了他们俩。",
+        impact: "用极其尖锐的手腕，把你扯开来看看男女之间最赤裸裸的虚荣与软弱。",
+        reason: "你不怎么排斥这世上的小算盘，看人看事也很透。太高大上或者傻白甜的东西不入你的眼，这本看客心理拉满的绝佳小说，很适合在天色晚了的时候当个话本子打磨光阴。",
+        matchCondition: (e,n,f,j) => n < 1 && f < 1 && e > 0
+    },
+    {
+        title: "华氏451",
+        author: "雷·布拉德伯里",
+        img: "https://upload.wikimedia.org/wikipedia/en/thumb/d/db/Fahrenheit_451_1st_ed_cover.jpg/220px-Fahrenheit_451_1st_ed_cover.jpg",
+        bio: "雷·布拉德伯里写科幻从来不爱堆砌长长的术语，他更像个拿笔画水彩画的预言先生。",
+        intro: "在一个电视屏幕占据了一整面墙还要多的时代里，消防员早已不负责灭火了。只要谁家里藏着印上去的长篇文字，消防署就会拉上警报，上门去把所有的书籍烧成灰烬。一直尽忠职守的男主，渐渐觉得日子有点不对劲了……",
+        impact: "想要毁掉一个时代那真是再容易不过了，只要让所有人别去深入思考就行。",
+        reason: "平时你也对周围那些吵吵闹闹的手机音响觉得厌恶吧。你的直觉很准，你察觉到了当下这种过分开心的浮躁感很无聊。在这个安静夜里翻开这册奇书，绝对会让你有找到知音的感觉。",
+        matchCondition: (e,n,f,j) => j < -1 && n > 2
+    },
+    {
+        title: "到灯塔去",
+        author: "弗吉尼亚·伍尔夫",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/To_the_Lighthouse.jpg/400px-To_the_Lighthouse.jpg",
+        bio: "弗吉尼亚·伍尔夫，擅长抓住像风丝、像云雾一般飘散的想法和细密难言的忧思。",
+        intro: "一家人热热闹闹地来了岛上想去看看远处的灯塔，却终究没成行。里面没有那种大哭大闹的狗血高潮桥段，这书记录的，只是屋子里每一个普通的早晨和午后，人心里像海浪一般翻滚而过的那些杂乱心绪罢了。",
+        impact: "在日常那鸡零狗碎的柴米油盐当中，生生抓住了光阴流走的痕迹。",
+        reason: "能敏锐地察觉天热了天凉了的情绪涟漪，常常在一瞬间脑子里想一大堆事情。你的敏锐度极佳，这本书像一张细细密密的网，将完美地贴合在你的内心上，陪你呼吸和发呆。",
+        matchCondition: (e,n,f,j) => e > 4 && j > 3
+    },
+    {
+        title: "荒原狼",
+        author: "赫尔曼·黑塞",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Steppenwolf_%28Hermann_Hesse%29_1927.jpg/400px-Steppenwolf_%28Hermann_Hesse%29_1927.jpg",
+        bio: "大半个世纪前年轻人们的绝对文化偶像，黑塞的书里有一种要撕开平庸的绝美疯狂。",
+        intro: "主角是个平时老实巴交的中年人，但他总觉得自己肚子里其实住着一条狂躁又寂寞的野狼。在一个雨夜，他撞进了一家门上写着“只给孤单和疯子开放”的诡异场子。在那里头，一切规矩全乱了套，他得找回最真实的自己。",
+        impact: "只要是个心里有过疙瘩的人，没法不和这个发着光的故事产生回响。",
+        reason: "经常在一个人的时候感到惬意，却偶尔又觉得世界太过吵闹。你那有些想去和世俗干点仗的小个性，正需要这剂猛药来好好拍打拍打。翻开它吧，你会和心里的那匹野狼达成谅解的。",
+        matchCondition: (e,n,f,j) => e > 2 && n > 4 && j > 1
+    },
+    {
+        title: "局外人",
+        author: "阿尔贝·加缪",
+        img: "https://upload.wikimedia.org/wikipedia/en/thumb/3/36/L%27%C3%89tranger_%28Camus_novel%29.jpg/220px-L%27%C3%89tranger_%28Camus_novel%29.jpg",
+        bio: "加缪的帅气不仅在于长相，更在于他对荒唐事儿那满不在乎的态度。",
+        intro: "什么都提不起干劲儿的主角，在经历了很糟糕的家庭变故后也没有流一滴眼泪，随后因为沙滩上的太阳太刺眼而莫名其妙地卷入了一场事端。接着，周围的人就像是看笑话一样，非得要他说出点感人肺腑的话来，或者直接将他推下悬崖。",
+        impact: "凭什么不随着大伙儿伤春悲秋，就成了一个不可原谅的罪人？",
+        reason: "那些套在大伙脑袋上虚假的面具，常常骗不了你的眼睛。那些累死人的应酬场合在你面前简直是活受罪。这个冷酷得不近人情却又帅到了骨子里的主角，就是你对抗这个无聊俗世的最佳护身符。",
+        matchCondition: (e,n,f,j) => e > 0 && f < -1 && n < 2
+    },
+    {
+        title: "使女的故事",
+        author: "玛格丽特·阿特伍德",
+        img: "https://upload.wikimedia.org/wikipedia/en/thumb/4/43/The_Handmaid%27s_Tale_%281st_ed_cover%29.jpg/220px-The_Handmaid%27s_Tale_%281st_ed_cover%29.jpg",
+        bio: "一位极其有张力、很懂如何在字里行间埋下针和火种的名字。",
+        intro: "当世界慢慢偏轨，一切旧时的自由全都被无故剥夺，原本有自己名字和生活的女人，被迫披上了统一红色的斗篷，成了某些人的附属品。而就在这严不透风的铁板墙下面，主角拿着笔，偷偷地记录下那些火烫的逃亡历程。",
+        impact: "只要有不被人注视的那一分钟，心底的反叛就绝不会彻底冰冷枯寂。",
+        reason: "平时脾气不爆，但如果谁不小心踩到了你的小圈子和边界线，你可是会在肚子里狠狠记账的。这本书极有拉扯感的故事铺展，会完全满足你对打破陈旧规矩和保护自我的深层渴望。",
+        matchCondition: (e,n,f,j) => f > 1 && n > 1 && j < 0
+    },
+    {
+        title: "童年的终结",
+        author: "阿瑟·克拉克",
+        img: "https://upload.wikimedia.org/wikipedia/en/thumb/5/5a/ChildhoodsEnd%281stEd%29.jpg/220px-ChildhoodsEnd%281stEd%29.jpg",
+        bio: "科幻界祖师爷一般的人物，他的想象力就是几代人想要去天上去一行的初始燃料。",
+        intro: "某一天，头顶上毫无征兆地停靠着大得出奇的飞行物。想象中的末日并没有发生，底下来的一群来历神秘的外星人不仅阻止了地面人自己的胡折腾，还给带来了吃穿不愁的好日子。可这天上从来没有白掉下来的好事，他们要的回报，是一个超乎所有人想象的结果。",
+        impact: "在这个巨大的棋盘面前，整个大地如同玩过家家一样幼稚。",
+        reason: "日常的吃喝拉撒常常绊不住你的脚步，只要眼睛往夜幕里望去，你就能琢磨出点和大家不一样的天际话题。去读一本让你能真真切切感受一阵战栗的科幻神作吧，让头脑过个好年。",
+        matchCondition: (e,n,f,j) => f <= -2 && n > 4
+    },
+    {
+        title: "虚构集",
+        author: "豪尔赫·路易斯·博尔赫斯",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Borges_by_Horacio_Coppola%2C_1935.jpg/400px-Borges_by_Horacio_Coppola%2C_1935.jpg",
+        bio: "被称为坐在无数迷宫深处的老瞎眼，他在脑袋里编织的世界，比现实还要奇特。",
+        intro: "里头没有那些拉拉扯扯的爱恨情仇故事。全都是一个又一个让人脑浆打结的神奇短篇：无穷无尽如同大网的图书馆、一个人其实是另一个人梦里的残片、一本书里的路线图成了真。它读起来极其干练利落，又魔性十足。",
+        impact: "完全像是一场高智商大脑们的拼图狂欢聚会。",
+        reason: "如果感觉最近看的剧集都很降智甚至觉得荒唐，你需要来点真正锻炼思维的好货。这本充满异域智力游戏色彩的奇思妙想杂货铺，一定会让喜欢琢磨好玩事物的你读得爱不释手。",
+        matchCondition: (e,n,f,j) => n > 3 && f < 0
+    },
+    {
+        title: "仿生人会梦见电子羊吗？",
+        author: "菲利普·K·迪克",
+        img: "https://upload.wikimedia.org/wikipedia/en/thumb/3/36/Do_Androids_Dream_of_Electric_Sheep_1st_ed.jpg/220px-Do_Androids_Dream_of_Electric_Sheep_1st_ed.jpg",
+        bio: "他的一生非常落魄，他的故事里总是带着一点老旧电子线路般的颓废感，却无比迷人。",
+        intro: "在一个到处都是乱哄哄机器人的未来日子里，真正的活物小动物变成了超级奢侈品。男主角为了挣点外快想要买只小羊带回家，接下去追击逃犯任务。但是追着追着，看着那些和真的人根本一模一样的家伙，他竟然也迷茫了。",
+        impact: "雨水冲刷下来的并不是泥巴，而是那些真假难辨的滚烫记忆眼泪。",
+        reason: "你在讲究效率、不想麻烦的这股劲头里，藏着一抹甩不掉的人情味儿。在这废气腾腾的霓虹未来都市里，看着男主角在一片冰冷的合金钢铁之中，偶尔透出的那一丁点柔软，你会非常有代入感。",
+        matchCondition: (e,n,f,j) => e > 1 && n > 1 && f < -1
+    },
+    {
+        title: "黑暗的左手",
+        author: "厄休拉·勒古恩",
+        img: "https://upload.wikimedia.org/wikipedia/en/thumb/8/87/The_Left_Hand_of_Darkness_1st_ed_cover.jpg/220px-The_Left_Hand_of_Darkness_1st_ed_cover.jpg",
+        bio: "一个特别钟情于描绘孤独星球上，各路不同生命与不同规矩之间的碰磕星辰写手。",
+        intro: "在遥远的白雪皑皑的一颗极寒星球上，去那出差当联络员的使者彻底懵圈了：上面居住的人们压根就不懂得什么叫男人和女人，它们只有到了某几个日子才会有突变。在一路的政局惊险大跑毒里头，使者必须要理解和信任这群与众不同的人。",
+        impact: "没有惊天动地的光束射弹枪，有的只是风雪当中两个人紧紧依靠的滚烫呼吸。",
+        reason: "你能比别人装下更多的宽广视线，很少在那些边边角角的事情上较真。带上一杯热茶，钻进属于这里的满天飞雪里去瞧看一圈吧，你会特别喜欢这个带有丝丝善意和温柔了解的远方童话。",
+        matchCondition: (e,n,f,j) => n > 2 && f > 2 && e > 2
+    }
+];
+
+const fallbackBook = books[0];
+
+let currentIndex = 0;
+let userAnswers = new Array(questions.length).fill(null);
+let totalScores = [0, 0, 0, 0];
+
+function startTest() {
+    document.getElementById('welcome-page').classList.add('hidden');
+    document.getElementById('question-page').classList.remove('hidden');
+    renderQuestion();
+}
+
+function renderQuestion() {
+    const qData = questions[currentIndex];
+    document.getElementById('progress-text').innerText = `${currentIndex + 1} / ${questions.length}`;
+    document.getElementById('question-title').innerText = qData.q;
+
+    const prevBtn = document.getElementById('prev-btn');
+    if(currentIndex > 0) {
+        prevBtn.classList.remove('hidden');
+    } else {
+        prevBtn.classList.add('hidden');
+    }
+
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+
+    qData.o.forEach((optText, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.innerText = optText;
+        btn.onclick = () => selectOption(index);
+        container.appendChild(btn);
+    });
+}
+
+function selectOption(optIndex) {
+    userAnswers[currentIndex] = optIndex;
+    if (currentIndex < questions.length - 1) {
+        currentIndex++;
+        renderQuestion();
+    } else {
+        showLoading();
+    }
+}
+
+function prevQuestion() {
+    if (currentIndex > 0) {
+        currentIndex--;
+        renderQuestion();
+    }
+}
+
+function showLoading() {
+    document.getElementById('question-page').classList.add('hidden');
+    document.getElementById('loading-page').classList.remove('hidden');
+
+    totalScores = [0, 0, 0, 0];
+    for (let i = 0; i < questions.length; i++) {
+        let selectedIndex = userAnswers[i];
+        if(selectedIndex !== null) {
+            let values = questions[i].v[selectedIndex];
+            totalScores[0] += values[0];
+            totalScores[1] += values[1];
+            totalScores[2] += values[2];
+            totalScores[3] += values[3];
+        }
+    }
+
+    setTimeout(() => {
+        showResult();
+    }, 1500);
+}
+
+function showResult() {
+    document.getElementById('loading-page').classList.add('hidden');
+    document.getElementById('result-page').classList.remove('hidden');
+
+    const [E, N, F, J] = totalScores;
+    let matchedBook = null;
+
+    for (let book of books) {
+        if (book.matchCondition(E, N, F, J)) {
+            matchedBook = book;
+            break;
+        }
+    }
+
+    if (!matchedBook) {
+        let r_index = Math.floor(Math.abs(E+N+F+J) % books.length);
+        matchedBook = books[r_index];
+    }
+
+    document.getElementById('res-title').innerText = `《${matchedBook.title}》`;
+    document.getElementById('res-author').innerText = `作者：${matchedBook.author}`;
+    document.getElementById('res-img').src = matchedBook.img;
+
+    // 抹除MBTI的生硬标签，替换为具有诗意和直觉的词汇
+    const eLabel = E > 0 ? "尘世感：【喜欢清静】" : "尘世感：【烟火入世】";
+    const nLabel = N > 0 ? "思维漫游：【总在仰望星星】" : "思维漫游：【踏实脚踩地面】";
+    const fLabel = F > 0 ? "心底温度：【软而温热】" : "心底温度：【透亮冷峻】";
+    const jLabel = J > 0 ? "前行步履：【溜达着走】" : "前行步履：【心里有谱】";
+
+    document.getElementById('res-scores').innerHTML = `
+        <span>${eLabel}</span> |
+        <span>${nLabel}</span> |
+        <span>${fLabel}</span> |
+        <span>${jLabel}</span>
+    `;
+
+    document.getElementById('res-content').innerHTML = `
+        <p><strong>写字的人：</strong>${matchedBook.bio}</p>
+        <p><strong>这本写了点什么：</strong>${matchedBook.intro}</p>
+        <div class="quote">${matchedBook.impact}</div>
+        <p><strong>你为什么被它选中：</strong>${matchedBook.reason}</p>
+    `;
+}
+</script>
+</body>
+</html>
